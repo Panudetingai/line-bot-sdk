@@ -34,6 +34,7 @@
   },
   "scripts": {
     "artifacts": "napi artifacts",
+    "app:dev": "yarn --cwd app dev",
     "bench": "node --import @oxc-node/core/register benchmark/bench.ts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
@@ -99,11 +100,14 @@
     "arrowParens": "always"
   },
   "packageManager": "yarn@4.14.1",
+  "workspaces": [
+    "app"
+  ],
   "optionalDependencies": {
-    "line-bot-sdk-rs-win32-x64-msvc": "1.0.0",
+    "line-bot-sdk-rs-darwin-arm64": "1.0.0",
     "line-bot-sdk-rs-darwin-x64": "1.0.0",
     "line-bot-sdk-rs-linux-x64-gnu": "1.0.0",
-    "line-bot-sdk-rs-darwin-arm64": "1.0.0"
+    "line-bot-sdk-rs-win32-x64-msvc": "1.0.0"
   },
   "author": "Panudet Ingai"
 }

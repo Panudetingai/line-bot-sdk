@@ -1,0 +1,21 @@
+{
+  "name": "line-bot-sdk-test-app",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --import @oxc-node/core/register --env-file=.env src/index.ts",
+    "start": "node --import @oxc-node/core/register --env-file=.env src/index.ts"
+  },
+  "dependencies": {
+    "@types/morgan": "^1.9.10",
+    "express": "^5.1.0",
+    "morgan": "^1.11.0"
+  },
+  "devDependencies": {
+    "@oxc-node/core": "^0.1.0",
+    "@types/express": "^5.0.3",
+    "@types/node": "^25.9.3",
+    "typescript": "^6.0.0"
+  }
+}
