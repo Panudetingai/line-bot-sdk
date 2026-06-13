@@ -2306,9 +2306,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"line-sdk-rust@workspace:.":
+"line-bot-sdk-rs@workspace:.":
   version: 0.0.0-use.local
-  resolution: "line-sdk-rust@workspace:."
+  resolution: "line-bot-sdk-rs@workspace:."
   dependencies:
     "@emnapi/core": "npm:^1.5.0"
     "@emnapi/runtime": "npm:^1.5.0"

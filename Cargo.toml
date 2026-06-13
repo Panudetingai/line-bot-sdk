@@ -2,26 +2,35 @@
 [package]
 authors = ["LongYinan <lynweklm@gmail.com>"]
 edition = "2021"
-name = "line_sdk_rust"
+name    = "line_bot_sdk_rs"
 version = "0.1.0"
 
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-napi = { version = "3.0.0", features = ["async"] }
+base64      = "0.22"
+bytes       = "1"
+hmac        = "0.12"
 napi-derive = "3.0.0"
-reqwest = { version = "0.12", features = ["json", "multipart"] }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-hmac = "0.12"
-sha2 = "0.10"
-base64 = "0.22"
-bytes = "1"
+serde_json  = "1"
+sha2        = "0.10"
+
+  [dependencies.napi]
+  features = ["async"]
+  version  = "3.0.0"
+
+  [dependencies.reqwest]
+  features = ["json", "multipart"]
+  version  = "0.12"
+
+  [dependencies.serde]
+  features = ["derive"]
+  version  = "1"
 
 [build-dependencies]
 napi-build = "2"
 
 [profile.release]
-lto = true
+lto   = true
 strip = "symbols"
