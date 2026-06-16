@@ -51,6 +51,7 @@
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
     "build:js": "tsc -p tsconfig.publish.json",
+    "publish:npm": "powershell -ExecutionPolicy Bypass -File ./scripts/publish-npm.ps1",
     "format": "run-p format:prettier format:rs format:toml",
     "format:prettier": "prettier . -w",
     "format:toml": "taplo format",

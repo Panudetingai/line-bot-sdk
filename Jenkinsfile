@@ -1,13 +1,8 @@
 // Single-node Windows Jenkins pipeline for line-bot-sdk-rs
 //
-// Jenkins Credential required:
-//   - Secret text, ID: NPM_TOKEN (npm access token with publish permission)
+// Jenkins Credential: Secret text, ID: NPM_TOKEN
 //
-// Publish triggers (any one):
-//   1. Push git tag v* (e.g. v1.0.1) and build that tag in Jenkins
-//   2. Run "Build with Parameters" and check PUBLISH_TO_NPM
-//
-// Note: this pipeline only builds the Windows x64 binary.
+// Publish: Build with Parameters -> PUBLISH_TO_NPM = true
 
 pipeline {
     agent any
@@ -16,12 +11,11 @@ pipeline {
         booleanParam(
             name: 'PUBLISH_TO_NPM',
             defaultValue: true,
-            description: 'Publish line-bot-sdk-rs to npm after tests pass (uncheck to skip)'
+            description: 'Publish line-bot-sdk-rs to npm after tests pass'
         )
     }
 
     environment {
-        APP_NAME = 'line-bot-sdk-rs'
         NODE_FILE = 'line-bot-sdk-rs.win32-x64-msvc.node'
         DEBUG = 'napi:*'
         CARGO_INCREMENTAL = '1'
@@ -39,12 +33,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                script {
-                    echo "BRANCH_NAME=${env.BRANCH_NAME ?: 'n/a'}"
-                    echo "GIT_BRANCH=${env.GIT_BRANCH ?: 'n/a'}"
-                    echo "TAG_NAME=${env.TAG_NAME ?: 'n/a'}"
-                    echo "PUBLISH_TO_NPM=${params.PUBLISH_TO_NPM}"
-                }
             }
         }
 
@@ -52,9 +40,6 @@ pipeline {
             steps {
                 bat '''
                     corepack enable
-                    node --version
-                    yarn --version
-                    rustc --version
                     yarn install --immutable
                     yarn lint
                     cargo fmt -- --check
@@ -68,23 +53,14 @@ pipeline {
                     corepack enable
                     rustup target add x86_64-pc-windows-msvc
                     yarn build -- --target x86_64-pc-windows-msvc
-                    if not exist "%NODE_FILE%" (
-                        echo ERROR: Native binding not found: %NODE_FILE%
-                        dir *.node 2>nul
-                        exit /b 1
-                    )
-                    echo Built native binding:
-                    dir "%NODE_FILE%"
+                    if not exist "%NODE_FILE%" exit /b 1
                 '''
             }
         }
 
         stage('Test On Windows') {
             steps {
-                bat '''
-                    corepack enable
-                    yarn test
-                '''
+                bat 'corepack enable && yarn test'
             }
         }
 
@@ -93,38 +69,58 @@ pipeline {
                 expression {
                     params.PUBLISH_TO_NPM ||
                     (env.TAG_NAME ?: '') ==~ /^v.*/ ||
-                    (env.GIT_BRANCH ?: '') ==~ /^v.*/ ||
                     (env.BRANCH_NAME ?: '') ==~ /^v.*/
                 }
             }
             steps {
                 withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
-                    bat '''
-                        @echo off
-                        setlocal EnableExtensions
-                        set NODE_VERSION=
-                        for /f "delims=" %%v in ('node -p "require('./package.json').version"') do set NODE_VERSION=%%v
-                        echo Publishing version: %NODE_VERSION%
+                    powershell '''
+                        $ErrorActionPreference = "Stop"
+                        Set-Location "$env:WORKSPACE"
+
+                        $version = node -p "require('./package.json').version"
+                        Write-Host "Publishing version: $version"
 
                         corepack enable
-                        yarn install --immutable || exit /b 1
-                        yarn napi create-npm-dirs || exit /b 1
-                        if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
-                        copy /Y "%NODE_FILE%" "artifacts\\bindings-x86_64-pc-windows-msvc\\%NODE_FILE%" || exit /b 1
-                        yarn artifacts || exit /b 1
-                        yarn build:js || exit /b 1
-                        dir npm\\win32-x64-msvc
-                        yarn napi prepublish -t npm --skip-optional-publish || exit /b 1
+                        yarn install --immutable
 
-                        npm config set //registry.npmjs.org/:_authToken %NPM_TOKEN%
-                        npm whoami || exit /b 1
+                        if (-not (Test-Path $env:NODE_FILE)) {
+                            throw "Missing native binding: $($env:NODE_FILE)"
+                        }
 
-                        npm publish --access public --ignore-scripts || exit /b 1
-                        npm publish --access public "npm\\win32-x64-msvc" || exit /b 1
+                        yarn napi create-npm-dirs
+                        $artifactDir = "artifacts/bindings-x86_64-pc-windows-msvc"
+                        New-Item -ItemType Directory -Force -Path $artifactDir | Out-Null
+                        Copy-Item -Force $env:NODE_FILE "$artifactDir/$env:NODE_FILE"
 
-                        npm view line-bot-sdk-rs version || exit /b 1
-                        npm view line-bot-sdk-rs-win32-x64-msvc version || exit /b 1
-                        echo npm publish completed for version %NODE_VERSION%
+                        yarn artifacts
+                        yarn build:js
+
+                        if (-not (Test-Path "npm/win32-x64-msvc/$env:NODE_FILE")) {
+                            throw "Platform .node file missing in npm/win32-x64-msvc"
+                        }
+
+                        npm config set "//registry.npmjs.org/:_authToken" $env:NPM_TOKEN
+                        try {
+                            $user = npm whoami 2>&1
+                            if ($LASTEXITCODE -ne 0) { throw "npm whoami failed: $user" }
+                            Write-Host "npm user: $user"
+
+                            npm publish --access public --ignore-scripts
+                            if ($LASTEXITCODE -ne 0) { throw "npm publish main package failed" }
+
+                            npm publish --access public npm/win32-x64-msvc
+                            if ($LASTEXITCODE -ne 0) { throw "npm publish win32 package failed" }
+
+                            $published = npm view line-bot-sdk-rs version
+                            Write-Host "npm registry version: $published"
+                            if ($published -ne $version) {
+                                throw "Expected version $version but npm has $published"
+                            }
+                            Write-Host "SUCCESS: published line-bot-sdk-rs@$version"
+                        } finally {
+                            npm config delete "//registry.npmjs.org/:_authToken" 2>$null
+                        }
                     '''
                 }
             }
@@ -132,25 +128,8 @@ pipeline {
     }
 
     post {
-        always {
-            bat 'npm config delete //registry.npmjs.org/:_authToken 2>nul'
-        }
-        success {
-            script {
-                def willPublish = params.PUBLISH_TO_NPM ||
-                    (env.TAG_NAME ?: '') ==~ /^v.*/ ||
-                    (env.GIT_BRANCH ?: '') ==~ /^v.*/ ||
-                    (env.BRANCH_NAME ?: '') ==~ /^v.*/
-                if (willPublish) {
-                    echo 'Pipeline completed successfully. Package published to npm.'
-                } else {
-                    echo 'Pipeline completed successfully. Publish was skipped (no tag v* and PUBLISH_TO_NPM=false).'
-                    echo 'To publish: run "Build with Parameters" and check PUBLISH_TO_NPM, or push tag v1.0.1'
-                }
-            }
-        }
         failure {
-            echo 'Pipeline failed. Check the stage logs above for details.'
+            echo 'Pipeline FAILED. Open "Publish to npm" console log for details.'
         }
     }
 }
