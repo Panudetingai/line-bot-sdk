@@ -15,8 +15,8 @@ pipeline {
     parameters {
         booleanParam(
             name: 'PUBLISH_TO_NPM',
-            defaultValue: false,
-            description: 'Publish line-bot-sdk-rs to npm after tests pass'
+            defaultValue: true,
+            description: 'Publish line-bot-sdk-rs to npm after tests pass (uncheck to skip)'
         )
     }
 
