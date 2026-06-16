@@ -100,19 +100,31 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
                     bat '''
+                        @echo off
+                        setlocal EnableExtensions
+                        set NODE_VERSION=
+                        for /f "delims=" %%v in ('node -p "require('./package.json').version"') do set NODE_VERSION=%%v
+                        echo Publishing version: %NODE_VERSION%
+
                         corepack enable
-                        yarn install --immutable
-                        yarn napi create-npm-dirs
+                        yarn install --immutable || exit /b 1
+                        yarn napi create-npm-dirs || exit /b 1
                         if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
-                        copy /Y "%NODE_FILE%" "artifacts\\bindings-x86_64-pc-windows-msvc\\%NODE_FILE%"
-                        yarn artifacts
-                        yarn build:js
+                        copy /Y "%NODE_FILE%" "artifacts\\bindings-x86_64-pc-windows-msvc\\%NODE_FILE%" || exit /b 1
+                        yarn artifacts || exit /b 1
+                        yarn build:js || exit /b 1
                         dir npm\\win32-x64-msvc
-                        yarn napi prepublish -t npm --skip-optional-publish
-                        npm config set provenance true
-                        echo //registry.npmjs.org/:_authToken=%NPM_TOKEN%> "%USERPROFILE%\\.npmrc"
-                        npm publish --access public --ignore-scripts
-                        npm publish --access public "npm\\win32-x64-msvc"
+                        yarn napi prepublish -t npm --skip-optional-publish || exit /b 1
+
+                        npm config set //registry.npmjs.org/:_authToken %NPM_TOKEN%
+                        npm whoami || exit /b 1
+
+                        npm publish --access public --ignore-scripts || exit /b 1
+                        npm publish --access public "npm\\win32-x64-msvc" || exit /b 1
+
+                        npm view line-bot-sdk-rs version || exit /b 1
+                        npm view line-bot-sdk-rs-win32-x64-msvc version || exit /b 1
+                        echo npm publish completed for version %NODE_VERSION%
                     '''
                 }
             }
@@ -121,7 +133,7 @@ pipeline {
 
     post {
         always {
-            bat 'if exist "%USERPROFILE%\\.npmrc" del "%USERPROFILE%\\.npmrc"'
+            bat 'npm config delete //registry.npmjs.org/:_authToken 2>nul'
         }
         success {
             script {
