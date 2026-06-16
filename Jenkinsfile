@@ -1,203 +1,126 @@
-// Jenkins pipeline for line-bot-sdk-rs (NAPI-RS multi-platform build + npm publish)
+// ปรับปรุงสำหรับรันภายในเครื่อง Windows ตัวหลักตัวเดียว (Single Node Setup)
+// มัดรวมงานทั้งหมดมาทำบน Agent ตัวเดียว ไม่ต้องกระจายเครื่องรัน
 //
-// Required Jenkins agents (labels):
-//   - linux-x64   : Ubuntu agent with Node 22+, Rust, Yarn
-//   - windows-x64 : Windows agent with Node 22+, Rust, Yarn
-//   - macos       : macOS agent with Node 22+, Rust, Yarn (Intel and/or Apple Silicon)
-//
-// Required Jenkins credentials:
-//   - npm-token (Secret text) : NPM access token with publish permission
-//
-// Trigger: push git tag matching v* (e.g. v1.0.1)
+// ข้อกำหนดใน Jenkins Credentials:
+//   - ต้องสร้าง 'Secret text' ตั้ง ID ว่า: npm-token
 
 pipeline {
-  agent none
+    agent any // สั่งรันบนเครื่องคอมพิวเตอร์ Windows หลักของคุณทันที ไม่ต้องตามหาเครื่องอื่น
 
-  environment {
-    APP_NAME = 'line-bot-sdk-rs'
-    DEBUG = 'napi:*'
-    CARGO_INCREMENTAL = '1'
-    MACOSX_DEPLOYMENT_TARGET = '10.13'
-    HUSKY = '0'
-    CI = 'true'
-  }
-
-  options {
-    disableConcurrentBuilds()
-    timeout(time: 60, unit: 'MINUTES')
-    buildDiscarder(logRotator(numToKeepStr: '20'))
-  }
-
-  stages {
-    stage('Lint') {
-      agent { label 'linux-x64' }
-      steps {
-        checkout scm
-        sh '''
-          corepack enable
-          node --version
-          yarn --version
-          rustc --version
-          yarn install --immutable
-          yarn lint
-          cargo fmt -- --check
-        '''
-      }
+    environment {
+        APP_NAME = 'line-bot-sdk-rs'
+        DEBUG = 'napi:*'
+        CARGO_INCREMENTAL = '1'
+        HUSKY = '0'
+        CI = 'true'
     }
 
-    stage('Build native bindings') {
-      parallel {
-        stage('Linux x64') {
-          agent { label 'linux-x64' }
-          steps {
-            checkout scm
-            sh '''
-              corepack enable
-              yarn install --immutable
-              rustup target add x86_64-unknown-linux-gnu
-              yarn build -- --target x86_64-unknown-linux-gnu
-              ls -la *.node
-            '''
-            stash includes: '*.node', name: 'bindings-x86_64-unknown-linux-gnu'
-          }
-        }
-
-        stage('Windows x64') {
-          agent { label 'windows-x64' }
-          steps {
-            checkout scm
-            bat '''
-              corepack enable
-              yarn install --immutable
-              rustup target add x86_64-pc-windows-msvc
-              yarn build -- --target x86_64-pc-windows-msvc
-              dir *.node
-            '''
-            stash includes: '*.node', name: 'bindings-x86_64-pc-windows-msvc'
-          }
-        }
-
-        stage('macOS x64') {
-          agent { label 'macos' }
-          steps {
-            checkout scm
-            sh '''
-              corepack enable
-              yarn install --immutable
-              rustup target add x86_64-apple-darwin
-              yarn build -- --target x86_64-apple-darwin
-              ls -la *.node
-            '''
-            stash includes: '*.node', name: 'bindings-x86_64-apple-darwin'
-          }
-        }
-
-        stage('macOS arm64') {
-          agent { label 'macos' }
-          steps {
-            checkout scm
-            sh '''
-              corepack enable
-              yarn install --immutable
-              rustup target add aarch64-apple-darwin
-              yarn build -- --target aarch64-apple-darwin
-              ls -la *.node
-            '''
-            stash includes: '*.node', name: 'bindings-aarch64-apple-darwin'
-          }
-        }
-      }
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 60, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '20'))
     }
 
-    stage('Test') {
-      parallel {
-        stage('Test Linux') {
-          agent { label 'linux-x64' }
-          steps {
-            checkout scm
-            sh 'corepack enable && yarn install --immutable'
-            unstash 'bindings-x86_64-unknown-linux-gnu'
-            sh 'yarn test'
-          }
+    stages {
+        // === ด่านที่ 1: ตรวจสอบความถูกต้องของโค้ด ===
+        stage('Lint') {
+            steps {
+                checkout scm
+                // ใช้ bat สำหรับทำงานบน Windows Terminal
+                bat '''
+                    corepack enable
+                    node --version
+                    yarn --version
+                    rustc --version
+                    yarn install --immutable
+                    yarn lint
+                    cargo fmt -- --check
+                '''
+            }
         }
 
-        stage('Test Windows') {
-          agent { label 'windows-x64' }
-          steps {
-            checkout scm
-            bat 'corepack enable && yarn install --immutable'
-            unstash 'bindings-x86_64-pc-windows-msvc'
-            bat 'yarn test'
-          }
+        // === ด่านที่ 2: คอมไพล์โค้ดเป็นไฟล์ระบบ .node ของ Windows ===
+        stage('Build native bindings (Windows)') {
+            steps {
+                checkout scm
+                bat '''
+                    corepack enable
+                    yarn install --immutable
+                    rustup target add x86_64-pc-windows-msvc
+                    yarn build -- --target x86_64-pc-windows-msvc
+                    dir *.node
+                '''
+                // ฝากไฟล์ที่คอมไพล์เสร็จไว้ในระบบคลังชั่วคราว
+                stash includes: '*.node', name: 'bindings-x86_64-pc-windows-msvc'
+            }
         }
 
-        stage('Test macOS arm64') {
-          agent { label 'macos' }
-          steps {
-            checkout scm
-            sh 'corepack enable && yarn install --immutable'
-            unstash 'bindings-aarch64-apple-darwin'
-            sh 'yarn test'
-          }
+        // === ด่านที่ 3: ทดสอบการทำงานบนเครื่อง Windows ===
+        stage('Test On Windows') {
+            steps {
+                checkout scm
+                bat 'corepack enable && yarn install --immutable'
+                // ดึงไฟล์ที่คอมไพล์ไว้จากสเตจที่แล้วออกมาทดสอบ
+                unstash 'bindings-x86_64-pc-windows-msvc'
+                bat 'yarn test'
+            }
         }
-      }
+
+        // === ด่านที่ 4: มัดรวมชิ้นงานและส่งขึ้น NPM Registry ===
+        stage('Publish to npm') {
+            when {
+                // ระบบจะยอมทำด่านนี้ก็ต่อเมื่อคุณ Push Git Tag เช่น v1.0.1 ขึ้นไปบน GitHub เท่านั้น
+                expression { env.TAG_NAME ==~ /^v.*/ || env.GIT_BRANCH ==~ /^v.*/ || env.BRANCH_NAME ==~ /^v.*/ }
+            }
+            steps {
+                checkout scm
+
+                // เตรียมโฟลเดอร์ปลายทาง
+                bat '''
+                    corepack enable
+                    yarn install --immutable
+                    yarn napi create-npm-dirs
+                '''
+
+                // ดึงไฟล์ Windows .node ออกมาจัดเรียงเข้าโฟลเดอร์เตรียมแพ็ก
+                script {
+                    unstash "bindings-x86_64-pc-windows-msvc"
+                    // ใช้คำสั่งสคริปต์ Windows ในการสร้างโฟลเดอร์และย้ายไฟล์
+                    bat """
+                        if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
+                        move *.node artifacts\\bindings-x86_64-pc-windows-msvc\\
+                    """
+                }
+
+                // สั่งมัดรวมโครงสร้างชิ้นงาน JS
+                bat '''
+                    yarn artifacts
+                    yarn build:js
+                '''
+
+                // เรียกใช้ Token ที่เราฝากไว้ในระบบ Jenkins Credentials (ID: npm-token)
+                withCredentials([string(credentialsId: 'npm-token', variable: 'NPM_TOKEN')]) {
+                    // สร้างคอนฟิกสำหรับล็อกอิน NPM บนระบบ Windows ชั่วคราวแล้วกดปล่อยของ
+                    bat """
+                        npm config set provenance true
+                        echo //registry.npmjs.org/:_authToken=%NPM_TOKEN% > %USERPROFILE%\\.npmrc
+                        npm publish --access public
+                    """
+                }
+            }
+        }
     }
 
-    stage('Publish to npm') {
-      when {
-        expression { env.TAG_NAME ==~ /^v.*/ || env.GIT_BRANCH ==~ /^v.*/ || env.BRANCH_NAME ==~ /^v.*/ }
-      }
-      agent { label 'linux-x64' }
-      steps {
-        checkout scm
-
-        sh '''
-          corepack enable
-          yarn install --immutable
-          yarn napi create-npm-dirs
-          rm -rf artifacts && mkdir -p artifacts
-        '''
-
-        script {
-          def targets = [
-            'x86_64-unknown-linux-gnu',
-            'x86_64-pc-windows-msvc',
-            'x86_64-apple-darwin',
-            'aarch64-apple-darwin',
-          ]
-          for (target in targets) {
-            unstash "bindings-${target}"
-            sh """
-              mkdir -p artifacts/bindings-${target}
-              mv *.node artifacts/bindings-${target}/
-            """
-          }
+    post {
+        always {
+            // สั่งทำความสะอาดลบรหัสผ่านออกจากเครื่องคอมพิวเตอร์หลังทำงานเสร็จเพื่อความปลอดภัย
+            bat 'if exist "%USERPROFILE%\\.npmrc" del "%USERPROFILE%\\.npmrc"'
         }
-
-        sh '''
-          ls -R artifacts/
-          yarn artifacts
-          ls -R npm/
-          yarn build:js
-        '''
-
-        withCredentials([string(credentialsId: 'npm-token', variable: 'NPM_TOKEN')]) {
-          sh '''
-            npm config set provenance true
-            echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
-            npm publish --access public
-          '''
+        success {
+            echo 'Pipeline completed successfully! แพ็กเกจถูกส่งขึ้น NPM เรียบร้อยแล้ว'
         }
-      }
+        failure {
+            echo 'Pipeline failed. ลองตรวจสอบข้อผิดพลาดด้านบนดูอีกครั้งครับ'
+        }
     }
-  }
-
-  post {
-    success {
-      echo 'Pipeline completed successfully.'
-    }
-    failure {
-      echo 'Pipeline failed. Check logs above.'
-    }
-  }
 }
