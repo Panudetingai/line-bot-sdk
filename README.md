@@ -23,9 +23,9 @@ High-performance [LINE Messaging API](https://developers.line.biz/en/reference/m
 ## Installation
 
 ```bash
-npm install @panudetingai/line-bot-sdk
+npm install line-bot-sdk-rs
 # or
-yarn add @panudetingai/line-bot-sdk
+yarn add line-bot-sdk-rs
 ```
 
 ## Quick Start
@@ -35,7 +35,7 @@ yarn add @panudetingai/line-bot-sdk
 Get your **Channel Access Token** from [LINE Developers Console](https://developers.line.biz/console/).
 
 ```typescript
-import { LineClient } from '@panudetingai/line-bot-sdk'
+import { LineClient } from 'line-bot-sdk-rs'
 
 const client = new LineClient(process.env.LINE_CHANNEL_ACCESS_TOKEN!)
 
@@ -65,8 +65,21 @@ console.log(profile.displayName, profile.pictureUrl)
 
 ### 4. Webhook handler (Next.js / Express)
 
+For **Next.js**, add `serverExternalPackages` in `next.config.ts` and use a Route Handler (server-side only):
+
 ```typescript
-import { verifySignature, parseWebhook, LineClient } from '@panudetingai/line-bot-sdk'
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+  serverExternalPackages: ['line-bot-sdk-rs'],
+}
+
+export default nextConfig
+```
+
+```typescript
+import { verifySignature, parseWebhook, LineClient } from 'line-bot-sdk-rs'
 
 const CHANNEL_SECRET = process.env.LINE_CHANNEL_SECRET!
 const client = new LineClient(process.env.LINE_CHANNEL_ACCESS_TOKEN!)
@@ -95,31 +108,31 @@ export async function POST(req: Request) {
 
 ### `LineClient`
 
-| Category | Methods |
-|----------|---------|
-| **Bot** | `getBotInfo()` |
-| **Messaging** | `pushText`, `pushMessages`, `replyText`, `replyMessages`, `multicast`, `broadcast` |
-| **Quota** | `getMessageQuota()`, `getMessageQuotaConsumption()` |
-| **Content** | `getMessageContent(messageId)` |
-| **Profile** | `getProfile(userId)`, `getFollowerIds(next?)` |
-| **Group** | `getGroupSummary`, `getGroupMemberProfile`, `getGroupMemberIds`, `leaveGroup` |
-| **Room** | `getRoomMemberProfile`, `getRoomMemberIds`, `leaveRoom` |
+| Category      | Methods                                                                                  |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| **Bot**       | `getBotInfo()`                                                                           |
+| **Messaging** | `pushText`, `pushMessages`, `replyText`, `replyMessages`, `multicast`, `broadcast`       |
+| **Quota**     | `getMessageQuota()`, `getMessageQuotaConsumption()`                                      |
+| **Content**   | `getMessageContent(messageId)`                                                           |
+| **Profile**   | `getProfile(userId)`, `getFollowerIds(next?)`                                            |
+| **Group**     | `getGroupSummary`, `getGroupMemberProfile`, `getGroupMemberIds`, `leaveGroup`            |
+| **Room**      | `getRoomMemberProfile`, `getRoomMemberIds`, `leaveRoom`                                  |
 | **Rich Menu** | `createRichMenu`, `uploadRichMenuImage`, `setDefaultRichMenu`, `linkRichMenuToUser`, ... |
-| **Insight** | `getMessageDeliveryOverview(date)`, `getFollowersInsight(date)` |
+| **Insight**   | `getMessageDeliveryOverview(date)`, `getFollowersInsight(date)`                          |
 
 ### Webhook helpers
 
-| Function | Description |
-|----------|-------------|
-| `verifySignature(body, signature, channelSecret)` | Validate `X-Line-Signature` header |
-| `parseWebhook(body)` | Parse webhook JSON into typed `WebhookBody` |
+| Function                                          | Description                                 |
+| ------------------------------------------------- | ------------------------------------------- |
+| `verifySignature(body, signature, channelSecret)` | Validate `X-Line-Signature` header          |
+| `parseWebhook(body)`                              | Parse webhook JSON into typed `WebhookBody` |
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `LINE_CHANNEL_ACCESS_TOKEN` | Channel access token for API calls |
-| `LINE_CHANNEL_SECRET` | Channel secret for webhook signature verification |
+| Variable                    | Description                                       |
+| --------------------------- | ------------------------------------------------- |
+| `LINE_CHANNEL_ACCESS_TOKEN` | Channel access token for API calls                |
+| `LINE_CHANNEL_SECRET`       | Channel secret for webhook signature verification |
 
 Never commit tokens to git. Use `.env` locally and secrets in CI/production.
 
@@ -133,6 +146,34 @@ yarn test
 # Integration test with a real token
 LINE_CHANNEL_ACCESS_TOKEN=xxx yarn test
 ```
+
+### Publishing
+
+Platform binaries are built in CI for macOS, Linux, and Windows. To publish a new version:
+
+1. Bump `version` in `package.json` (and run `yarn version` if you use git tags).
+2. Add `NPM_TOKEN` to GitHub repository secrets.
+3. Push a version tag:
+
+```bash
+git tag v1.0.1
+git push origin v1.0.1
+```
+
+CI will build all platform `.node` files, run tests, and publish `line-bot-sdk-rs` plus the platform packages to npm.
+
+**Important:** Do not run `npm publish` locally without CI artifacts — platform packages would ship without `.node` binaries (this caused the v1.0.0 install error).
+
+### Jenkins
+
+Use the included `Jenkinsfile` at the repo root. Setup:
+
+1. **Agents** with labels: `linux-x64`, `windows-x64`, `macos` (each needs Node 22+, Rust, Yarn via corepack).
+2. **Credential** in Jenkins: ID `npm-token` (Secret text) — your npm access token.
+3. **Job trigger**: Multibranch Pipeline or Pipeline from SCM, filter branches/tags `v*`.
+4. **Publish**: runs automatically when the build is triggered by a tag like `v1.0.1`.
+
+Flow mirrors GitHub Actions: parallel native builds → test → collect artifacts → `yarn artifacts` → `npm publish`.
 
 ### Project structure
 

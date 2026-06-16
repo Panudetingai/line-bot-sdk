@@ -1,4 +1,8 @@
-import { LineClient as _LineClient, verifyWebhookSignature, parseWebhookBody } from '../index'
+const {
+  LineClient: _LineClient,
+  verifyWebhookSignature,
+  parseWebhookBody,
+} = require('../index.js') as typeof import('../index')
 import type {
   LineMessage,
   Profile,
@@ -145,7 +149,7 @@ export class LineClient {
 
   /** Get all rich menus. */
   async getRichMenuList(): Promise<RichMenuResponse[]> {
-    const res = await this._client.getRichMenuList() as unknown as { richmenus: RichMenuResponse[] }
+    const res = (await this._client.getRichMenuList()) as unknown as { richmenus: RichMenuResponse[] }
     return res.richmenus
   }
 
@@ -175,7 +179,7 @@ export class LineClient {
 
   /** Get the rich menu linked to a user. */
   async getUserRichMenu(userId: string): Promise<string> {
-    const res = await this._client.getUserRichMenu(userId) as unknown as { richMenuId: string }
+    const res = (await this._client.getUserRichMenu(userId)) as unknown as { richMenuId: string }
     return res.richMenuId
   }
 
@@ -218,11 +222,7 @@ export class LineClient {
  * Verify the X-Line-Signature header.
  * Use in your Next.js webhook route handler.
  */
-export function verifySignature(
-  rawBody: string,
-  signature: string,
-  channelSecret: string,
-): boolean {
+export function verifySignature(rawBody: string, signature: string, channelSecret: string): boolean {
   return verifyWebhookSignature(rawBody, signature, channelSecret)
 }
 

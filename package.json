@@ -1,8 +1,19 @@
 {
   "name": "line-bot-sdk-rs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "High-performance LINE Messaging API SDK built with Rust and NAPI-RS",
-  "main": "index.js",
+  "main": "dist/client.js",
+  "types": "dist/client.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/client.d.ts",
+      "default": "./dist/client.js"
+    },
+    "./native": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
   "license": "MIT",
   "keywords": [
     "line",
@@ -14,7 +25,8 @@
   ],
   "files": [
     "index.d.ts",
-    "index.js"
+    "index.js",
+    "dist"
   ],
   "napi": {
     "binaryName": "line-bot-sdk-rs",
@@ -38,12 +50,13 @@
     "bench": "node --import @oxc-node/core/register benchmark/bench.ts",
     "build": "napi build --platform --release",
     "build:debug": "napi build --platform",
+    "build:js": "tsc -p tsconfig.publish.json",
     "format": "run-p format:prettier format:rs format:toml",
     "format:prettier": "prettier . -w",
     "format:toml": "taplo format",
     "format:rs": "cargo fmt",
     "lint": "oxlint .",
-    "prepublishOnly": "napi prepublish -t npm",
+    "prepublishOnly": "yarn build:js && napi prepublish -t npm",
     "test": "ava",
     "preversion": "napi build --platform && git add .",
     "version": "napi version",
@@ -104,10 +117,10 @@
     "app"
   ],
   "optionalDependencies": {
-    "line-bot-sdk-rs-darwin-arm64": "1.0.0",
-    "line-bot-sdk-rs-darwin-x64": "1.0.0",
-    "line-bot-sdk-rs-linux-x64-gnu": "1.0.0",
-    "line-bot-sdk-rs-win32-x64-msvc": "1.0.0"
+    "line-bot-sdk-rs-win32-x64-msvc": "1.0.1",
+    "line-bot-sdk-rs-darwin-x64": "1.0.1",
+    "line-bot-sdk-rs-linux-x64-gnu": "1.0.1",
+    "line-bot-sdk-rs-darwin-arm64": "1.0.1"
   },
   "author": "Panudet Ingai"
 }
