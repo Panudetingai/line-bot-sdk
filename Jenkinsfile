@@ -36,9 +36,24 @@ pipeline {
             }
         }
 
+        stage('Install dependencies') {
+            steps {
+                bat '''
+                    @echo off
+                    cd /d "%WORKSPACE%"
+                    corepack enable
+                    node --version
+                    yarn --version
+                    yarn install --immutable
+                '''
+            }
+        }
+
         stage('Lint') {
             steps {
                 bat '''
+                    @echo off
+                    cd /d "%WORKSPACE%"
                     corepack enable
                     yarn install --immutable
                     yarn lint
@@ -50,17 +65,29 @@ pipeline {
         stage('Build native bindings (Windows)') {
             steps {
                 bat '''
+                    @echo off
+                    cd /d "%WORKSPACE%"
                     corepack enable
+                    yarn install --immutable
                     rustup target add x86_64-pc-windows-msvc
                     yarn build -- --target x86_64-pc-windows-msvc
-                    if not exist "%NODE_FILE%" exit /b 1
+                    if not exist "%NODE_FILE%" (
+                        echo ERROR: missing %NODE_FILE%
+                        exit /b 1
+                    )
                 '''
             }
         }
 
         stage('Test On Windows') {
             steps {
-                bat 'corepack enable && yarn test'
+                bat '''
+                    @echo off
+                    cd /d "%WORKSPACE%"
+                    corepack enable
+                    yarn install --immutable
+                    yarn test
+                '''
             }
         }
 
@@ -76,13 +103,13 @@ pipeline {
                 withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
                     powershell '''
                         $ErrorActionPreference = "Stop"
-                        Set-Location "$env:WORKSPACE"
-
-                        $version = node -p "require('./package.json').version"
-                        Write-Host "Publishing version: $version"
+                        Set-Location $env:WORKSPACE
 
                         corepack enable
                         yarn install --immutable
+
+                        $version = node -p "require('./package.json').version"
+                        Write-Host "Publishing version: $version"
 
                         if (-not (Test-Path $env:NODE_FILE)) {
                             throw "Missing native binding: $($env:NODE_FILE)"
@@ -129,7 +156,7 @@ pipeline {
 
     post {
         failure {
-            echo 'Pipeline FAILED. Open "Publish to npm" console log for details.'
+            echo 'Pipeline FAILED. Check console log for details.'
         }
     }
 }
