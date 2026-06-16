@@ -1,14 +1,19 @@
-// ปรับปรุงสำหรับรันภายในเครื่อง Windows ตัวหลักตัวเดียว (Single Node Setup)
-// มัดรวมงานทั้งหมดมาทำบน Agent ตัวเดียว ไม่ต้องกระจายเครื่องรัน
+// Single-node Windows Jenkins pipeline for line-bot-sdk-rs
 //
-// ข้อกำหนดใน Jenkins Credentials:
-//   - ต้องสร้าง 'Secret text' ตั้ง ID ว่า: npm-token
+// Jenkins Credential required:
+//   - Secret text, ID: npm-token (npm access token with publish permission)
+//
+// Publish trigger: push a git tag matching v* (e.g. v1.0.1)
+//
+// Note: this pipeline only builds the Windows x64 binary. Linux/macOS users
+// still need those platform packages published separately (multi-agent CI).
 
 pipeline {
-    agent any // สั่งรันบนเครื่องคอมพิวเตอร์ Windows หลักของคุณทันที ไม่ต้องตามหาเครื่องอื่น
+    agent any
 
     environment {
         APP_NAME = 'line-bot-sdk-rs'
+        NODE_FILE = 'line-bot-sdk-rs.win32-x64-msvc.node'
         DEBUG = 'napi:*'
         CARGO_INCREMENTAL = '1'
         HUSKY = '0'
@@ -22,11 +27,14 @@ pipeline {
     }
 
     stages {
-        // === ด่านที่ 1: ตรวจสอบความถูกต้องของโค้ด ===
-        stage('Lint') {
+        stage('Checkout') {
             steps {
                 checkout scm
-                // ใช้ bat สำหรับทำงานบน Windows Terminal
+            }
+        }
+
+        stage('Lint') {
+            steps {
                 bat '''
                     corepack enable
                     node --version
@@ -39,73 +47,58 @@ pipeline {
             }
         }
 
-        // === ด่านที่ 2: คอมไพล์โค้ดเป็นไฟล์ระบบ .node ของ Windows ===
         stage('Build native bindings (Windows)') {
             steps {
-                checkout scm
                 bat '''
                     corepack enable
-                    yarn install --immutable
                     rustup target add x86_64-pc-windows-msvc
                     yarn build -- --target x86_64-pc-windows-msvc
-                    dir *.node
+                    if not exist "%NODE_FILE%" (
+                        echo ERROR: Native binding not found: %NODE_FILE%
+                        dir *.node 2>nul
+                        exit /b 1
+                    )
+                    echo Built native binding:
+                    dir "%NODE_FILE%"
                 '''
-                // ฝากไฟล์ที่คอมไพล์เสร็จไว้ในระบบคลังชั่วคราว
-                stash includes: '*.node', name: 'bindings-x86_64-pc-windows-msvc'
             }
         }
 
-        // === ด่านที่ 3: ทดสอบการทำงานบนเครื่อง Windows ===
         stage('Test On Windows') {
             steps {
-                checkout scm
-                bat 'corepack enable && yarn install --immutable'
-                // ดึงไฟล์ที่คอมไพล์ไว้จากสเตจที่แล้วออกมาทดสอบ
-                unstash 'bindings-x86_64-pc-windows-msvc'
-                bat 'yarn test'
+                bat '''
+                    corepack enable
+                    yarn test
+                '''
             }
         }
 
-        // === ด่านที่ 4: มัดรวมชิ้นงานและส่งขึ้น NPM Registry ===
         stage('Publish to npm') {
             when {
-                // ระบบจะยอมทำด่านนี้ก็ต่อเมื่อคุณ Push Git Tag เช่น v1.0.1 ขึ้นไปบน GitHub เท่านั้น
-                expression { env.TAG_NAME ==~ /^v.*/ || env.GIT_BRANCH ==~ /^v.*/ || env.BRANCH_NAME ==~ /^v.*/ }
+                expression {
+                    env.TAG_NAME ==~ /^v.*/ ||
+                    env.GIT_BRANCH ==~ /^v.*/ ||
+                    env.BRANCH_NAME ==~ /^v.*/
+                }
             }
             steps {
-                checkout scm
-
-                // เตรียมโฟลเดอร์ปลายทาง
                 bat '''
                     corepack enable
-                    yarn install --immutable
                     yarn napi create-npm-dirs
-                '''
-
-                // ดึงไฟล์ Windows .node ออกมาจัดเรียงเข้าโฟลเดอร์เตรียมแพ็ก
-                script {
-                    unstash "bindings-x86_64-pc-windows-msvc"
-                    // ใช้คำสั่งสคริปต์ Windows ในการสร้างโฟลเดอร์และย้ายไฟล์
-                    bat """
-                        if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
-                        move *.node artifacts\\bindings-x86_64-pc-windows-msvc\\
-                    """
-                }
-
-                // สั่งมัดรวมโครงสร้างชิ้นงาน JS
-                bat '''
+                    if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
+                    copy /Y "%NODE_FILE%" "artifacts\\bindings-x86_64-pc-windows-msvc\\%NODE_FILE%"
                     yarn artifacts
                     yarn build:js
                 '''
 
-                // เรียกใช้ Token ที่เราฝากไว้ในระบบ Jenkins Credentials (ID: npm-token)
                 withCredentials([string(credentialsId: 'npm-token', variable: 'NPM_TOKEN')]) {
-                    // สร้างคอนฟิกสำหรับล็อกอิน NPM บนระบบ Windows ชั่วคราวแล้วกดปล่อยของ
-                    bat """
+                    bat '''
+                        call yarn napi prepublish -t npm --skip-optional-publish
                         npm config set provenance true
-                        echo //registry.npmjs.org/:_authToken=%NPM_TOKEN% > %USERPROFILE%\\.npmrc
-                        npm publish --access public
-                    """
+                        echo //registry.npmjs.org/:_authToken=%NPM_TOKEN%> "%USERPROFILE%\\.npmrc"
+                        npm publish --access public --ignore-scripts
+                        npm publish --access public "npm\\win32-x64-msvc"
+                    '''
                 }
             }
         }
@@ -113,14 +106,13 @@ pipeline {
 
     post {
         always {
-            // สั่งทำความสะอาดลบรหัสผ่านออกจากเครื่องคอมพิวเตอร์หลังทำงานเสร็จเพื่อความปลอดภัย
             bat 'if exist "%USERPROFILE%\\.npmrc" del "%USERPROFILE%\\.npmrc"'
         }
         success {
-            echo 'Pipeline completed successfully! แพ็กเกจถูกส่งขึ้น NPM เรียบร้อยแล้ว'
+            echo 'Pipeline completed successfully.'
         }
         failure {
-            echo 'Pipeline failed. ลองตรวจสอบข้อผิดพลาดด้านบนดูอีกครั้งครับ'
+            echo 'Pipeline failed. Check the stage logs above for details.'
         }
     }
 }
