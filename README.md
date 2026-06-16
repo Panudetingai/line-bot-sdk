@@ -169,7 +169,7 @@ CI will build all platform `.node` files, run tests, and publish `line-bot-sdk-r
 Use the included `Jenkinsfile` at the repo root. Setup:
 
 1. **Agents** with labels: `linux-x64`, `windows-x64`, `macos` (each needs Node 22+, Rust, Yarn via corepack).
-2. **Credential** in Jenkins: ID `npm-token` (Secret text) — your npm access token.
+2. **Credential** in Jenkins: ID `NPM_TOKEN` (Secret text) — your npm access token.
 3. **Job trigger**: Multibranch Pipeline or Pipeline from SCM, filter branches/tags `v*`.
 4. **Publish**: runs automatically when the build is triggered by a tag like `v1.0.1`.
 

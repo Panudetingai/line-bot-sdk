@@ -1,7 +1,7 @@
 // Single-node Windows Jenkins pipeline for line-bot-sdk-rs
 //
 // Jenkins Credential required:
-//   - Secret text, ID: npm-token (npm access token with publish permission)
+//   - Secret text, ID: NPM_TOKEN (npm access token with publish permission)
 //
 // Publish triggers (any one):
 //   1. Push git tag v* (e.g. v1.0.1) and build that tag in Jenkins
@@ -108,7 +108,7 @@ pipeline {
                     dir npm\\win32-x64-msvc
                 '''
 
-                withCredentials([string(credentialsId: 'npm-token', variable: 'NPM_TOKEN')]) {
+                withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
                     bat '''
                         call yarn napi prepublish -t npm --skip-optional-publish
                         npm config set provenance true
