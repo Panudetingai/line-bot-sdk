@@ -98,19 +98,17 @@ pipeline {
                 }
             }
             steps {
-                bat '''
-                    corepack enable
-                    yarn napi create-npm-dirs
-                    if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
-                    copy /Y "%NODE_FILE%" "artifacts\\bindings-x86_64-pc-windows-msvc\\%NODE_FILE%"
-                    yarn artifacts
-                    yarn build:js
-                    dir npm\\win32-x64-msvc
-                '''
-
                 withCredentials([string(credentialsId: 'NPM_TOKEN', variable: 'NPM_TOKEN')]) {
                     bat '''
-                        call yarn napi prepublish -t npm --skip-optional-publish
+                        corepack enable
+                        yarn install --immutable
+                        yarn napi create-npm-dirs
+                        if not exist "artifacts\\bindings-x86_64-pc-windows-msvc" mkdir "artifacts\\bindings-x86_64-pc-windows-msvc"
+                        copy /Y "%NODE_FILE%" "artifacts\\bindings-x86_64-pc-windows-msvc\\%NODE_FILE%"
+                        yarn artifacts
+                        yarn build:js
+                        dir npm\\win32-x64-msvc
+                        yarn napi prepublish -t npm --skip-optional-publish
                         npm config set provenance true
                         echo //registry.npmjs.org/:_authToken=%NPM_TOKEN%> "%USERPROFILE%\\.npmrc"
                         npm publish --access public --ignore-scripts
