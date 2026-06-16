@@ -1,10 +1,10 @@
 import express from 'express'
+import morgan from 'morgan'
 import { LineClient } from '../../typescript/line-client'
 import { env } from './env.js'
 import { createWebhookHandler } from './webhook.js'
-import morgan from 'morgan'
 
-const client = new LineClient(env.accessToken)
+const client = new LineClient({ accessToken: env.accessToken })
 const app = express()
 
 app.use(morgan('dev'))

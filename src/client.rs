@@ -2,6 +2,7 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use reqwest::Client;
 use serde::Serialize;
+use serde_json::json;
 
 #[napi]
 pub struct LineClient {
@@ -9,13 +10,18 @@ pub struct LineClient {
   pub(crate) http: Client,
 }
 
+#[napi(object)]
+pub struct LineClientArgs {
+  #[napi(ts_type = "string")]
+  pub access_token: String,
+}
+
 #[napi]
 impl LineClient {
   #[napi(constructor)]
-  pub fn new(access_token: String) -> Result<Self> {
-    if access_token.trim().is_empty() {
-      return Err(Error::from_reason("access_token is required"));
-    }
+  pub fn new(args: LineClientArgs) -> Result<Self> {
+    let LineClientArgs { access_token } = args;
+    if access_token.trim().is_empty() { return Err(Error::from_reason("access_token is required")); }
     Ok(Self { access_token, http: Client::new() })
   }
 }

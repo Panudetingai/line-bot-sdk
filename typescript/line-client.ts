@@ -4,27 +4,29 @@ const {
   parseWebhookBody,
 } = require('../index.js') as typeof import('../index')
 import type {
-  LineMessage,
-  Profile,
-  GroupSummary,
-  GroupMemberProfile,
-  MemberIds,
+  BotInfo,
   FollowerIds,
+  FollowersInsight,
+  GroupMemberProfile,
+  GroupSummary,
+  LineMessage,
+  MemberIds,
+  MessageDeliveryOverview,
+  MessageQuota,
+  MessageQuotaConsumption,
+  Profile,
   RichMenu,
   RichMenuResponse,
   WebhookBody,
-  MessageDeliveryOverview,
-  FollowersInsight,
-  MessageQuota,
-  MessageQuotaConsumption,
-  BotInfo,
 } from './types'
 
 export class LineClient {
   private _client: InstanceType<typeof _LineClient>
 
-  constructor(accessToken: string) {
-    this._client = new _LineClient(accessToken)
+  constructor({ accessToken }: { accessToken: string }) {
+    this._client = new _LineClient({
+      accessToken: accessToken,
+    })
   }
 
   // ── Messaging ─────────────────────────────────────────────────────────────────
@@ -223,7 +225,11 @@ export class LineClient {
  * Use in your Next.js webhook route handler.
  */
 export function verifySignature(rawBody: string, signature: string, channelSecret: string): boolean {
-  return verifyWebhookSignature(rawBody, signature, channelSecret)
+  return verifyWebhookSignature({
+    body: rawBody,
+    signature: signature,
+    channelSecret: channelSecret,
+  })
 }
 
 /**

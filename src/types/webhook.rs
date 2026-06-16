@@ -1,6 +1,15 @@
 use napi_derive::napi;
 use serde::{Deserialize, Serialize};
 
+// ------- Verify Signature ──────────────────────────────────────────────────────
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct VerifySignatureArgs {
+  pub body: String,
+  pub signature: String,
+  pub channel_secret: String,
+}
+
 // ── Webhook Body ──────────────────────────────────────────────────────────────
 
 #[napi(object)]
