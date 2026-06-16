@@ -224,11 +224,19 @@ export class LineClient {
  * Verify the X-Line-Signature header.
  * Use in your Next.js webhook route handler.
  */
-export function verifySignature(rawBody: string, signature: string, channelSecret: string): boolean {
+export function verifySignature({
+  body,
+  signature,
+  channelSecret,
+}: {
+  body: string
+  signature: string
+  channelSecret: string
+}): boolean {
   return verifyWebhookSignature({
-    body: rawBody,
-    signature: signature,
-    channelSecret: channelSecret,
+    body,
+    signature,
+    channelSecret,
   })
 }
 

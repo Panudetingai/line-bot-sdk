@@ -23,10 +23,10 @@
         "typescript": "^6.0.0",
       },
       "optionalDependencies": {
-        "line-bot-sdk-rs-darwin-arm64": "1.0.0",
-        "line-bot-sdk-rs-darwin-x64": "1.0.0",
-        "line-bot-sdk-rs-linux-x64-gnu": "1.0.0",
-        "line-bot-sdk-rs-win32-x64-msvc": "1.0.0",
+        "line-bot-sdk-rs-darwin-arm64": "1.0.1",
+        "line-bot-sdk-rs-darwin-x64": "1.0.1",
+        "line-bot-sdk-rs-linux-x64-gnu": "1.0.1",
+        "line-bot-sdk-rs-win32-x64-msvc": "1.0.1",
       },
     },
     "app": {
@@ -578,13 +578,9 @@
 
     "json-with-bigint": ["json-with-bigint@3.5.8", "", {}, "sha512-eq/4KP6K34kwa7TcFdtvnftvHCD9KvHOGGICWwMFc4dOOKF5t4iYqnfLK8otCRCRv06FXOzGGyqE8h8ElMvvdw=="],
 
-    "line-bot-sdk-rs-darwin-arm64": ["line-bot-sdk-rs-darwin-arm64@1.0.0", "", { "os": "darwin", "cpu": "arm64" }, "sha512-siSIocwznbaA7O9a/NogDM0gVLXxaiw5q1x9dHn9iRJjLhAI0SVhereOiAoWzM7W+G3GuQOHzUYYkpGSdFgxvA=="],
+    "line-bot-sdk-rs-darwin-arm64": ["line-bot-sdk-rs-darwin-arm64@1.0.1", "", { "os": "darwin", "cpu": "arm64" }, "sha512-SKDHYN3DN2XVB/MaJLjhEVHhZV5R3Fvwod5O93jguirMYk68BvbvdJJhJL/BGLFvXxuQGILRqd0B8WzR+BtwCw=="],
 
-    "line-bot-sdk-rs-darwin-x64": ["line-bot-sdk-rs-darwin-x64@1.0.0", "", { "os": "darwin", "cpu": "x64" }, "sha512-2XkB/qHG190FY1+KEakT2nKXVrDR7Af6FDfKAkF4FUYfOMQKlN1e9QBq3AD27NZE3OUo3qoq64Ydkk+PFb1Kyg=="],
-
-    "line-bot-sdk-rs-linux-x64-gnu": ["line-bot-sdk-rs-linux-x64-gnu@1.0.0", "", { "os": "linux", "cpu": "x64" }, "sha512-ERsHeVXgF00ZiFuF7t6iG8Xikpnu2c1MG1RywgK5ImSbL6Ss44EeVvO8JrZ8WjF7brbILYGU5Gl9S4h+y8XeZw=="],
-
-    "line-bot-sdk-rs-win32-x64-msvc": ["line-bot-sdk-rs-win32-x64-msvc@1.0.0", "", { "os": "win32", "cpu": "x64" }, "sha512-DTp5oacN8TGiyxJI3yVnV5i9gXT4pvy+S9Z+PZ/gl9XdV1tJ9QWM1Kb8J56R5a1xPy1kAHB2ankdZymo1CThsw=="],
+    "line-bot-sdk-rs-win32-x64-msvc": ["line-bot-sdk-rs-win32-x64-msvc@1.0.1", "", { "os": "win32", "cpu": "x64" }, "sha512-Ilv8n8/AANdvsx2ARkQ3zHRWxDVD9xjSlOVdz24gjGyBHxL1uUfp5BIFSJ3P5x/flN25lK94FLiZJx8qoEGZSA=="],
 
     "line-bot-sdk-test-app": ["line-bot-sdk-test-app@workspace:app"],
 

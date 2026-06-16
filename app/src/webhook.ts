@@ -47,7 +47,7 @@ export function createWebhookHandler(client: LineClient) {
       return
     }
 
-    if (!verifySignature(rawBody, signature, env.channelSecret)) {
+    if (!verifySignature({ body: rawBody, signature, channelSecret: env.channelSecret })) {
       res.status(401).json({ error: 'Invalid signature' })
       return
     }
