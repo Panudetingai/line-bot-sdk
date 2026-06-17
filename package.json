@@ -1,5 +1,5 @@
 {
-  "name": "line-bot-sdk-rs",
+  "name": "@luka/line-bot-rs",
   "version": "1.0.0",
   "description": "High-performance LINE Messaging API SDK built with Rust and NAPI-RS",
   "main": "dist/client.js",
