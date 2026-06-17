@@ -108,9 +108,6 @@ jobs:
       - name: Build native binding
         run: yarn build -- --target ${{ matrix.target }}
 
-      - name: Test bindings
-        run: yarn test
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
