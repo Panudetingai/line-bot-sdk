@@ -1,3 +1,9 @@
+// Push Message Request
+export interface PushMessageRequest {
+  to: string
+  messages: LineMessage[]
+}
+
 // ── Message Types ─────────────────────────────────────────────────────────────
 
 export interface TextMessage {
@@ -79,7 +85,14 @@ export interface QuickReply {
 
 export interface QuickReplyItem {
   type: 'action'
-  action: MessageAction | PostbackAction | URIAction | DatetimePickerAction | CameraAction | CameraRollAction | LocationAction
+  action:
+    | MessageAction
+    | PostbackAction
+    | URIAction
+    | DatetimePickerAction
+    | CameraAction
+    | CameraRollAction
+    | LocationAction
   imageUrl?: string
 }
 
