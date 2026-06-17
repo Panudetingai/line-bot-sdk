@@ -21,8 +21,13 @@ impl LineClient {
   #[napi(constructor)]
   pub fn new(args: LineClientArgs) -> Result<Self> {
     let LineClientArgs { access_token } = args;
-    if access_token.trim().is_empty() { return Err(Error::from_reason("access_token is required")); }
-    Ok(Self { access_token, http: Client::new() })
+    if access_token.trim().is_empty() {
+      return Err(Error::from_reason("access_token is required"));
+    }
+    Ok(Self {
+      access_token,
+      http: Client::new(),
+    })
   }
 }
 
@@ -42,7 +47,10 @@ impl LineClient {
       return Err(Error::from_reason(format!("HTTP {status}: {body}")));
     }
 
-    res.text().await.map_err(|e| Error::from_reason(e.to_string()))
+    res
+      .text()
+      .await
+      .map_err(|e| Error::from_reason(e.to_string()))
   }
 
   pub(crate) async fn request_get_binary(&self, url: &str) -> Result<Buffer> {
@@ -60,11 +68,18 @@ impl LineClient {
       return Err(Error::from_reason(format!("HTTP {status}: {body}")));
     }
 
-    let bytes = res.bytes().await.map_err(|e| Error::from_reason(e.to_string()))?;
+    let bytes = res
+      .bytes()
+      .await
+      .map_err(|e| Error::from_reason(e.to_string()))?;
     Ok(Buffer::from(bytes.to_vec()))
   }
 
-  pub(crate) async fn request_post_json<T: Serialize>(&self, url: &str, body: &T) -> Result<String> {
+  pub(crate) async fn request_post_json<T: Serialize>(
+    &self,
+    url: &str,
+    body: &T,
+  ) -> Result<String> {
     let res = self
       .http
       .post(url)
@@ -80,8 +95,15 @@ impl LineClient {
       return Err(Error::from_reason(format!("HTTP {status}: {text}")));
     }
 
-    let text = res.text().await.map_err(|e| Error::from_reason(e.to_string()))?;
-    if text.is_empty() { Ok("{}".to_string()) } else { Ok(text) }
+    let text = res
+      .text()
+      .await
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    if text.is_empty() {
+      Ok("{}".to_string())
+    } else {
+      Ok(text)
+    }
   }
 
   pub(crate) async fn request_post_binary(
@@ -106,8 +128,15 @@ impl LineClient {
       return Err(Error::from_reason(format!("HTTP {status}: {text}")));
     }
 
-    let text = res.text().await.map_err(|e| Error::from_reason(e.to_string()))?;
-    if text.is_empty() { Ok("{}".to_string()) } else { Ok(text) }
+    let text = res
+      .text()
+      .await
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    if text.is_empty() {
+      Ok("{}".to_string())
+    } else {
+      Ok(text)
+    }
   }
 
   pub(crate) async fn request_delete(&self, url: &str) -> Result<String> {
@@ -125,7 +154,14 @@ impl LineClient {
       return Err(Error::from_reason(format!("HTTP {status}: {body}")));
     }
 
-    let text = res.text().await.map_err(|e| Error::from_reason(e.to_string()))?;
-    if text.is_empty() { Ok("{}".to_string()) } else { Ok(text) }
+    let text = res
+      .text()
+      .await
+      .map_err(|e| Error::from_reason(e.to_string()))?;
+    if text.is_empty() {
+      Ok("{}".to_string())
+    } else {
+      Ok(text)
+    }
   }
 }

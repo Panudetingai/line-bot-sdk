@@ -12,14 +12,18 @@ impl LineClient {
     &self,
     date: String,
   ) -> Result<MessageDeliveryOverview> {
-    let body = self.request_get(&endpoints::insight_message_delivery(&date)).await?;
+    let body = self
+      .request_get(&endpoints::insight_message_delivery(&date))
+      .await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 
   /// `date` format: YYYYMMDD
   #[napi]
   pub async fn get_followers_insight(&self, date: String) -> Result<FollowersInsight> {
-    let body = self.request_get(&endpoints::insight_followers(&date)).await?;
+    let body = self
+      .request_get(&endpoints::insight_followers(&date))
+      .await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 }

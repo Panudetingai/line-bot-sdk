@@ -18,7 +18,12 @@ pub struct TextMessage {
 
 impl TextMessage {
   pub fn new(text: String) -> Self {
-    Self { message_type: "text".into(), text, quick_reply: None, sender: None }
+    Self {
+      message_type: "text".into(),
+      text,
+      quick_reply: None,
+      sender: None,
+    }
   }
 }
 

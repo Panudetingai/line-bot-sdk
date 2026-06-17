@@ -10,7 +10,9 @@ impl LineClient {
 
   #[napi]
   pub async fn get_group_summary(&self, group_id: String) -> Result<GroupSummary> {
-    let body = self.request_get(&endpoints::group_summary(&group_id)).await?;
+    let body = self
+      .request_get(&endpoints::group_summary(&group_id))
+      .await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 
@@ -43,7 +45,9 @@ impl LineClient {
 
   #[napi]
   pub async fn leave_group(&self, group_id: String) -> Result<String> {
-    self.request_post_json(&endpoints::leave_group(&group_id), &serde_json::json!({})).await
+    self
+      .request_post_json(&endpoints::leave_group(&group_id), &serde_json::json!({}))
+      .await
   }
 
   // ── Room ──────────────────────────────────────────────────────────────────────
@@ -77,6 +81,8 @@ impl LineClient {
 
   #[napi]
   pub async fn leave_room(&self, room_id: String) -> Result<String> {
-    self.request_post_json(&endpoints::leave_room(&room_id), &serde_json::json!({})).await
+    self
+      .request_post_json(&endpoints::leave_room(&room_id), &serde_json::json!({}))
+      .await
   }
 }

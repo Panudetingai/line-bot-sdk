@@ -13,14 +13,24 @@ impl LineClient {
 
   #[napi]
   pub async fn push_message(&self, to: String, text: String) -> Result<String> {
-    let body = PushMessageRequest { to, messages: vec![TextMessage::new(text)] };
-    self.request_post_json(&endpoints::push_message(), &body).await
+    let body = PushMessageRequest {
+      to,
+      messages: vec![TextMessage::new(text)],
+    };
+    self
+      .request_post_json(&endpoints::push_message(), &body)
+      .await
   }
 
   #[napi]
   pub async fn reply_message(&self, reply_token: String, text: String) -> Result<String> {
-    let body = ReplyMessageRequest { reply_token, messages: vec![TextMessage::new(text)] };
-    self.request_post_json(&endpoints::reply_message(), &body).await
+    let body = ReplyMessageRequest {
+      reply_token,
+      messages: vec![TextMessage::new(text)],
+    };
+    self
+      .request_post_json(&endpoints::reply_message(), &body)
+      .await
   }
 
   // ── Raw JSON (accepts any LINE message types as JSON string) ──────────────────
@@ -32,7 +42,9 @@ impl LineClient {
     let messages: Vec<Value> = serde_json::from_str(&messages_json)
       .map_err(|e| Error::from_reason(format!("Invalid messages JSON: {e}")))?;
     let body = serde_json::json!({ "to": to, "messages": messages });
-    self.request_post_json(&endpoints::push_message(), &body).await
+    self
+      .request_post_json(&endpoints::push_message(), &body)
+      .await
   }
 
   /// Reply with any message types. `messages_json` = JSON array string.
@@ -41,7 +53,9 @@ impl LineClient {
     let messages: Vec<Value> = serde_json::from_str(&messages_json)
       .map_err(|e| Error::from_reason(format!("Invalid messages JSON: {e}")))?;
     let body = serde_json::json!({ "replyToken": reply_token, "messages": messages });
-    self.request_post_json(&endpoints::reply_message(), &body).await
+    self
+      .request_post_json(&endpoints::reply_message(), &body)
+      .await
   }
 
   /// Multicast to multiple users. `user_ids_json` = JSON string array.
@@ -52,7 +66,9 @@ impl LineClient {
     let messages: Vec<Value> = serde_json::from_str(&messages_json)
       .map_err(|e| Error::from_reason(format!("Invalid messages JSON: {e}")))?;
     let body = serde_json::json!({ "to": to, "messages": messages });
-    self.request_post_json(&endpoints::multicast_message(), &body).await
+    self
+      .request_post_json(&endpoints::multicast_message(), &body)
+      .await
   }
 
   /// Broadcast to all followers. `messages_json` = JSON array string.
@@ -61,7 +77,9 @@ impl LineClient {
     let messages: Vec<Value> = serde_json::from_str(&messages_json)
       .map_err(|e| Error::from_reason(format!("Invalid messages JSON: {e}")))?;
     let body = serde_json::json!({ "messages": messages });
-    self.request_post_json(&endpoints::broadcast_message(), &body).await
+    self
+      .request_post_json(&endpoints::broadcast_message(), &body)
+      .await
   }
 
   // ── Quota ─────────────────────────────────────────────────────────────────────
@@ -74,7 +92,9 @@ impl LineClient {
 
   #[napi]
   pub async fn get_message_quota_consumption(&self) -> Result<MessageQuotaConsumption> {
-    let body = self.request_get(&endpoints::message_quota_consumption()).await?;
+    let body = self
+      .request_get(&endpoints::message_quota_consumption())
+      .await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 
@@ -82,6 +102,8 @@ impl LineClient {
 
   #[napi]
   pub async fn get_message_content(&self, message_id: String) -> Result<Buffer> {
-    self.request_get_binary(&endpoints::message_content(&message_id)).await
+    self
+      .request_get_binary(&endpoints::message_content(&message_id))
+      .await
   }
 }

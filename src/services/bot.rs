@@ -1,8 +1,8 @@
 use crate::api::endpoints;
 use crate::client::LineClient;
+use crate::types::profile::BotInfo;
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use crate::types::profile::BotInfo;
 
 #[napi]
 impl LineClient {

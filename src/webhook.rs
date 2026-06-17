@@ -4,20 +4,18 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use sha2::Sha256;
 
-use crate::types::webhook::{WebhookBody, VerifySignatureArgs};
+use crate::types::webhook::{VerifySignatureArgs, WebhookBody};
 
 /// Verify the X-Line-Signature header against the raw request body.
 /// Returns true if the signature is valid.
 
 #[napi]
-pub fn verify_webhook_signature(
-  args: VerifySignatureArgs,
-) -> bool {
+pub fn verify_webhook_signature(args: VerifySignatureArgs) -> bool {
   let Ok(sig_bytes) = STANDARD.decode(&args.signature) else {
     return false;
   };
-  let mut mac =
-    Hmac::<Sha256>::new_from_slice(args.channel_secret.as_bytes()).expect("HMAC accepts any key size");
+  let mut mac = Hmac::<Sha256>::new_from_slice(args.channel_secret.as_bytes())
+    .expect("HMAC accepts any key size");
   mac.update(args.body.as_bytes());
   mac.verify_slice(&sig_bytes).is_ok()
 }

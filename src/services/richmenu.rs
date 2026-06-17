@@ -18,13 +18,17 @@ impl LineClient {
 
   #[napi]
   pub async fn get_rich_menu(&self, rich_menu_id: String) -> Result<RichMenuResponse> {
-    let body = self.request_get(&endpoints::rich_menu(&rich_menu_id)).await?;
+    let body = self
+      .request_get(&endpoints::rich_menu(&rich_menu_id))
+      .await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 
   #[napi]
   pub async fn delete_rich_menu(&self, rich_menu_id: String) -> Result<String> {
-    self.request_delete(&endpoints::rich_menu(&rich_menu_id)).await
+    self
+      .request_delete(&endpoints::rich_menu(&rich_menu_id))
+      .await
   }
 
   #[napi]
@@ -75,7 +79,9 @@ impl LineClient {
 
   #[napi]
   pub async fn get_user_rich_menu(&self, user_id: String) -> Result<RichMenuIdResponse> {
-    let body = self.request_get(&endpoints::user_rich_menu(&user_id)).await?;
+    let body = self
+      .request_get(&endpoints::user_rich_menu(&user_id))
+      .await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 
@@ -95,7 +101,9 @@ impl LineClient {
 
   #[napi]
   pub async fn unlink_rich_menu_from_user(&self, user_id: String) -> Result<String> {
-    self.request_delete(&endpoints::user_rich_menu(&user_id)).await
+    self
+      .request_delete(&endpoints::user_rich_menu(&user_id))
+      .await
   }
 
   /// Bulk link rich menu to multiple users. `user_ids_json` = JSON array string.
@@ -108,7 +116,9 @@ impl LineClient {
     let user_ids: Vec<String> = serde_json::from_str(&user_ids_json)
       .map_err(|e| Error::from_reason(format!("Invalid user_ids JSON: {e}")))?;
     let body = serde_json::json!({ "richMenuId": rich_menu_id, "userIds": user_ids });
-    self.request_post_json(&endpoints::bulk_link_rich_menu(), &body).await
+    self
+      .request_post_json(&endpoints::bulk_link_rich_menu(), &body)
+      .await
   }
 
   /// Bulk unlink rich menu from multiple users. `user_ids_json` = JSON array string.
@@ -117,6 +127,8 @@ impl LineClient {
     let user_ids: Vec<String> = serde_json::from_str(&user_ids_json)
       .map_err(|e| Error::from_reason(format!("Invalid user_ids JSON: {e}")))?;
     let body = serde_json::json!({ "userIds": user_ids });
-    self.request_post_json(&endpoints::bulk_unlink_rich_menu(), &body).await
+    self
+      .request_post_json(&endpoints::bulk_unlink_rich_menu(), &body)
+      .await
   }
 }
