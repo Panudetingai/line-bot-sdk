@@ -9,18 +9,6 @@ env:
   CI: 'true'
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*'
-    paths-ignore:
-      - '**/*.md'
-      - LICENSE
-      - '**/*.gitignore'
-      - .editorconfig
-      - docs/**
-  pull_request:
   workflow_dispatch:
 
 concurrency:

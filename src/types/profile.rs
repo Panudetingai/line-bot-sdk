@@ -15,10 +15,10 @@ pub struct Profile {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BotInfo {
-  pub userId: String,
-  pub basicId: String,
-  pub displayName: String,
-  pub pictureUrl: String,
-  pub chatMode: String,
-  pub markAsReadMode: String,
+  pub user_id: String,
+  pub basic_id: String,
+  pub display_name: String,
+  pub picture_url: String,
+  pub chat_mode: String,
+  pub mark_as_read_mode: String,
 }

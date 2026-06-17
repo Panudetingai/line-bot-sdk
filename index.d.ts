@@ -4,6 +4,7 @@ export declare class LineClient {
   constructor(args: LineClientArgs)
   verify(): Promise<BotInfo>
   getGroupSummary(groupId: string): Promise<GroupSummary>
+  getGroupMembersCount(groupId: string): Promise<number>
   getGroupMemberProfile(groupId: string, userId: string): Promise<GroupMemberProfile>
   getGroupMemberIds(groupId: string, next?: string | undefined | null): Promise<MemberIds>
   leaveGroup(groupId: string): Promise<string>
@@ -14,7 +15,11 @@ export declare class LineClient {
   getMessageDeliveryOverview(date: string): Promise<MessageDeliveryOverview>
   /** `date` format: YYYYMMDD */
   getFollowersInsight(date: string): Promise<FollowersInsight>
+  getDemographic(): Promise<string>
+  getWebhookEndpoint(): Promise<string>
   pushMessage(to: string, text: string): Promise<string>
+  narrowcastMessage(messagesJson: string): Promise<string>
+  messageContentPreview(messageId: string): Promise<Buffer>
   replyMessage(replyToken: string, text: string): Promise<string>
   /**
    * Send any message types. `messages_json` = JSON array string.
@@ -34,6 +39,7 @@ export declare class LineClient {
   /** Returns follower user IDs. Pass `next` cursor for pagination (empty string for first page). */
   getFollowerIds(next?: string | undefined | null): Promise<FollowerIds>
   createRichMenu(richMenu: RichMenu): Promise<string>
+  getRichMenuDefault(): Promise<RichMenuIdResponse>
   getRichMenu(richMenuId: string): Promise<RichMenuResponse>
   deleteRichMenu(richMenuId: string): Promise<string>
   getRichMenuList(): Promise<RichMenuList>

@@ -318,29 +318,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@luka/line-bot-rs@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@luka/line-bot-rs@workspace:."
-  dependencies:
-    "@emnapi/core": "npm:^1.5.0"
-    "@emnapi/runtime": "npm:^1.5.0"
-    "@napi-rs/cli": "npm:^3.2.0"
-    "@oxc-node/core": "npm:^0.1.0"
-    "@taplo/cli": "npm:^0.7.0"
-    "@tybys/wasm-util": "npm:^0.10.0"
-    "@types/node": "npm:^25.9.3"
-    ava: "npm:^8.0.0"
-    chalk: "npm:^5.6.2"
-    husky: "npm:^9.1.7"
-    lint-staged: "npm:^17.0.0"
-    npm-run-all2: "npm:^8.0.4"
-    oxlint: "npm:^1.14.0"
-    prettier: "npm:^3.6.2"
-    tinybench: "npm:^6.0.0"
-    typescript: "npm:^6.0.0"
-  languageName: unknown
-  linkType: soft
-
 "@mapbox/node-pre-gyp@npm:^2.0.0":
   version: 2.0.3
   resolution: "@mapbox/node-pre-gyp@npm:2.0.3"
@@ -2763,6 +2740,29 @@ __metadata:
   checksum: 10c0/a0c4e37626d74a9a493539f9f9a94855933fa15ea2f028859a787229a42c5f11803db6f94f1ce7b1d89756c1e80a7c1f11006bac266ec7ce819b75701765ca0a
   languageName: node
   linkType: hard
+
+"line-bot-sdk-rs@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "line-bot-sdk-rs@workspace:."
+  dependencies:
+    "@emnapi/core": "npm:^1.5.0"
+    "@emnapi/runtime": "npm:^1.5.0"
+    "@napi-rs/cli": "npm:^3.2.0"
+    "@oxc-node/core": "npm:^0.1.0"
+    "@taplo/cli": "npm:^0.7.0"
+    "@tybys/wasm-util": "npm:^0.10.0"
+    "@types/node": "npm:^25.9.3"
+    ava: "npm:^8.0.0"
+    chalk: "npm:^5.6.2"
+    husky: "npm:^9.1.7"
+    lint-staged: "npm:^17.0.0"
+    npm-run-all2: "npm:^8.0.4"
+    oxlint: "npm:^1.14.0"
+    prettier: "npm:^3.6.2"
+    tinybench: "npm:^6.0.0"
+    typescript: "npm:^6.0.0"
+  languageName: unknown
+  linkType: soft
 
 "line-bot-sdk-test-app@workspace:app":
   version: 0.0.0-use.local

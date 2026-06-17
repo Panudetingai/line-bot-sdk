@@ -2,7 +2,6 @@ use napi::bindgen_prelude::*;
 use napi_derive::napi;
 use reqwest::Client;
 use serde::Serialize;
-use serde_json::json;
 
 #[napi]
 pub struct LineClient {

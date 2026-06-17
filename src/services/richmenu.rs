@@ -17,6 +17,15 @@ impl LineClient {
   }
 
   #[napi]
+  pub async fn get_rich_menu_default(&self) -> Result<RichMenuIdResponse> {
+    let result = self.request_get(&endpoints::rich_menu_default_get()).await;
+    match result {
+      Ok(body) => serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string())),
+      Err(e) => Err(Error::from_reason(e.to_string())),
+    }
+  } 
+
+  #[napi]
   pub async fn get_rich_menu(&self, rich_menu_id: String) -> Result<RichMenuResponse> {
     let body = self
       .request_get(&endpoints::rich_menu(&rich_menu_id))

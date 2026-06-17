@@ -23,6 +23,25 @@ impl LineClient {
   }
 
   #[napi]
+  pub async fn narrowcast_message(&self, messages_json: String) -> Result<String> {
+    let messages: Vec<Value> = serde_json::from_str(&messages_json)
+      .map_err(|e| Error::from_reason(format!("Invalid messages JSON: {e}")))?;
+    let body = serde_json::json!({ "messages": messages });
+    self
+      .request_post_json(&endpoints::narrowcast_message(), &body)
+      .await
+  }
+
+  #[napi]
+  pub async fn message_content_preview(&self, message_id: String) -> Result<Buffer> {
+    let result = self.request_get_binary(&endpoints::message_content_preview(&message_id)).await;
+    match result {
+        Ok(buffer) => Ok(buffer),
+        Err(e) => Err(Error::from_reason(e.to_string())),
+    }
+  }
+
+  #[napi]
   pub async fn reply_message(&self, reply_token: String, text: String) -> Result<String> {
     let body = ReplyMessageRequest {
       reply_token,

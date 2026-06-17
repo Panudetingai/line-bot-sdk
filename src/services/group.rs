@@ -17,6 +17,15 @@ impl LineClient {
   }
 
   #[napi]
+  pub async fn get_group_members_count(&self, group_id: String) -> Result<i64> {
+    let body = self.request_get(&endpoints::group_members_count(&group_id)).await?;
+    match serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string())) {
+        Ok(count) => Ok(count),
+        Err(_) => Err(Error::from_reason("Failed to parse group members count")),
+    }
+  }
+
+  #[napi]
   pub async fn get_group_member_profile(
     &self,
     group_id: String,
@@ -85,4 +94,5 @@ impl LineClient {
       .request_post_json(&endpoints::leave_room(&room_id), &serde_json::json!({}))
       .await
   }
+
 }
