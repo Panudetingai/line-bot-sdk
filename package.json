@@ -1,6 +1,6 @@
 {
   "name": "line-bot-sdk-rs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "High-performance LINE Messaging API SDK built with Rust and NAPI-RS",
   "main": "dist/client.js",
   "types": "dist/client.d.ts",
