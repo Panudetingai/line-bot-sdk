@@ -2741,6 +2741,34 @@ __metadata:
   languageName: node
   linkType: hard
 
+"line-bot-sdk-rs-darwin-arm64@npm:1.1.0":
+  version: 1.1.0
+  resolution: "line-bot-sdk-rs-darwin-arm64@npm:1.1.0"
+  conditions: os=darwin & cpu=arm64
+  languageName: node
+  linkType: hard
+
+"line-bot-sdk-rs-darwin-x64@npm:1.1.0":
+  version: 1.1.0
+  resolution: "line-bot-sdk-rs-darwin-x64@npm:1.1.0"
+  conditions: os=darwin & cpu=x64
+  languageName: node
+  linkType: hard
+
+"line-bot-sdk-rs-linux-x64-gnu@npm:1.1.0":
+  version: 1.1.0
+  resolution: "line-bot-sdk-rs-linux-x64-gnu@npm:1.1.0"
+  conditions: os=linux & cpu=x64 & libc=glibc
+  languageName: node
+  linkType: hard
+
+"line-bot-sdk-rs-win32-x64-msvc@npm:1.1.0":
+  version: 1.1.0
+  resolution: "line-bot-sdk-rs-win32-x64-msvc@npm:1.1.0"
+  conditions: os=win32 & cpu=x64
+  languageName: node
+  linkType: hard
+
 "line-bot-sdk-rs@workspace:.":
   version: 0.0.0-use.local
   resolution: "line-bot-sdk-rs@workspace:."
@@ -2755,12 +2783,25 @@ __metadata:
     ava: "npm:^8.0.0"
     chalk: "npm:^5.6.2"
     husky: "npm:^9.1.7"
+    line-bot-sdk-rs-darwin-arm64: "npm:1.1.0"
+    line-bot-sdk-rs-darwin-x64: "npm:1.1.0"
+    line-bot-sdk-rs-linux-x64-gnu: "npm:1.1.0"
+    line-bot-sdk-rs-win32-x64-msvc: "npm:1.1.0"
     lint-staged: "npm:^17.0.0"
     npm-run-all2: "npm:^8.0.4"
     oxlint: "npm:^1.14.0"
     prettier: "npm:^3.6.2"
     tinybench: "npm:^6.0.0"
     typescript: "npm:^6.0.0"
+  dependenciesMeta:
+    line-bot-sdk-rs-darwin-arm64:
+      optional: true
+    line-bot-sdk-rs-darwin-x64:
+      optional: true
+    line-bot-sdk-rs-linux-x64-gnu:
+      optional: true
+    line-bot-sdk-rs-win32-x64-msvc:
+      optional: true
   languageName: unknown
   linkType: soft
 

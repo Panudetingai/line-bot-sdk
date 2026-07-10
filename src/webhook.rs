@@ -10,14 +10,22 @@ use crate::types::webhook::{VerifySignatureArgs, WebhookBody};
 /// Returns true if the signature is valid.
 
 #[napi]
-pub fn verify_webhook_signature(args: VerifySignatureArgs) -> bool {
-  let Ok(sig_bytes) = STANDARD.decode(&args.signature) else {
-    return false;
-  };
-  let mut mac = Hmac::<Sha256>::new_from_slice(args.channel_secret.as_bytes())
-    .expect("HMAC accepts any key size");
-  mac.update(args.body.as_bytes());
-  mac.verify_slice(&sig_bytes).is_ok()
+pub fn verify_webhook_signature(
+    args: VerifySignatureArgs,
+) -> napi::Result<bool> {
+    let sig_bytes = STANDARD
+        .decode(&args.signature)
+        .map_err(|e| napi::Error::from_reason(format!("Invalid signature: {e}")))?;
+
+    let mut mac = Hmac::<Sha256>::new_from_slice(args.channel_secret.as_bytes())
+        .map_err(|e| napi::Error::from_reason(format!("Invalid channel secret: {e}")))?;
+
+    mac.update(args.body.as_bytes());
+
+    match mac.verify_slice(&sig_bytes) {
+        Ok(_) => Ok(true),
+        Err(_) => Ok(false), // Signature ไม่ตรง ถือว่าไม่ใช่ error
+    }
 }
 
 /// Parse a webhook body JSON string into typed events.

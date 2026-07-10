@@ -21,12 +21,41 @@ pub struct WebhookBody {
 
 // ── Event ────────────────────────────────────────────────────────────────────
 
+// EVENT TYPES
+#[napi(string_enum = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum EventType {
+    /// ผู้ใช้งานส่งข้อความ รูปภาพ วิดีโอ ไฟล์ หรือสติกเกอร์เข้ามาในแชท
+    Message, 
+    
+    /// หมายเหตุ: LINE Webhook ไม่มีเหตุการณ์ 'edit' ข้อความ
+    /// แต่จะใช้สำหรับระบุเหตุการณ์อื่นๆ ตามสถาปัตยกรรมระบบของคุณเอง
+    Edit, 
+    
+    /// ผู้ใช้งานกดปุ่มที่มี Action เป็น Postback (เช่น ปุ่มใน Flex Message หรือ Quick Reply)
+    Postback, 
+    
+    /// ผู้ใช้งานเพิ่มบัญชีทางการเป็นเพื่อน หรือเปลี่ยนสถานะจากบล็อกเป็นเลิกบล็อก
+    Follow, 
+    
+    /// ผู้ใช้งานบล็อกบัญชีทางการ หรือลบระบบออกจากรายชื่อเพื่อน
+    Unfollow, 
+    
+    /// บัญชีทางการ (Bot) ถูกเชิญหรือเพิ่มเข้าไปในกลุ่ม (Group) หรือห้องแชท (Room)
+    Join, 
+    
+    /// บัญชีทางการ (Bot) ถูกลบหรือเตะออกจากกลุ่ม (Group) หรือห้องแชท (Room)
+    Leave, 
+}
+
+
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WebhookEvent {
   #[serde(rename = "type")]
-  pub event_type: String,
+  pub event_type: EventType,
   pub timestamp: i64,
   pub source: EventSource,
   pub webhook_event_id: Option<String>,
@@ -72,13 +101,27 @@ pub struct DeliveryContext {
 
 // ── Event Message ─────────────────────────────────────────────────────────────
 
+// MESSAGE TYPES
+#[napi(string_enum = "camelCase")]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum MessageType {
+  Text,
+  Image,
+  Video,
+  Audio,
+  File,
+  Location,
+  Sticker,
+}
+
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EventMessage {
   pub id: String,
   #[serde(rename = "type")]
-  pub message_type: String,
+  pub message_type: MessageType,
 
   // text message
   pub text: Option<String>,

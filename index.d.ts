@@ -92,7 +92,7 @@ export interface DeliveryContext {
 
 export interface EventMessage {
   id: string
-  messageType: string
+  messageType: MessageType
   text?: string
   contentProvider?: ContentProvider
   duration?: number
@@ -112,6 +112,26 @@ export interface EventSource {
   userId?: string
   groupId?: string
   roomId?: string
+}
+
+export declare const enum EventType {
+  /** ผйщใชщงานสшงขщอความ รйปภาพ วдดеโอ ไฟลт หรзอสตдกเกอรтเขщามาในแชท */
+  Message = 'message',
+  /**
+   * หมายเหตи: LINE Webhook ไมшมеเหตиการณт 'edit' ขщอความ
+   * แตшจะใชщสำหรбบระบиเหตиการณтอзшนๆ ตามสถาปбตยกรรมระบบของคиณเอง
+   */
+  Edit = 'edit',
+  /** ผйщใชщงานกดปишมทешมе Action เปчน Postback (เชшน ปишมใน Flex Message หรзอ Quick Reply) */
+  Postback = 'postback',
+  /** ผйщใชщงานเพдшมบбญชеทางการเปчนเพзшอน หรзอเปลешยนสถานะจากบลчอกเปчนเลдกบลчอก */
+  Follow = 'follow',
+  /** ผйщใชщงานบลчอกบбญชеทางการ หรзอลบระบบออกจากรายชзшอเพзшอน */
+  Unfollow = 'unfollow',
+  /** บбญชеทางการ (Bot) ถйกเชдญหรзอเพдшมเขщาไปในกลишม (Group) หรзอหщองแชท (Room) */
+  Join = 'join',
+  /** บбญชеทางการ (Bot) ถйกลบหรзอเตะออกจากกลишม (Group) หรзอหщองแชท (Room) */
+  Leave = 'leave',
 }
 
 export interface FollowerIds {
@@ -181,6 +201,16 @@ export interface MessageQuota {
 
 export interface MessageQuotaConsumption {
   totalUsage: number
+}
+
+export declare const enum MessageType {
+  Text = 'text',
+  Image = 'image',
+  Video = 'video',
+  Audio = 'audio',
+  File = 'file',
+  Location = 'location',
+  Sticker = 'sticker',
 }
 
 /**
@@ -330,7 +360,7 @@ export interface WebhookBody {
 }
 
 export interface WebhookEvent {
-  eventType: string
+  eventType: EventType
   timestamp: number
   source: EventSource
   webhookEventId?: string

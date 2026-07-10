@@ -588,5 +588,7 @@ if (!nativeBinding) {
 
 module.exports = nativeBinding
 module.exports.LineClient = nativeBinding.LineClient
+module.exports.EventType = nativeBinding.EventType
+module.exports.MessageType = nativeBinding.MessageType
 module.exports.parseWebhookBody = nativeBinding.parseWebhookBody
 module.exports.verifyWebhookSignature = nativeBinding.verifyWebhookSignature

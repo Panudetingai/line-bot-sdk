@@ -1,6 +1,6 @@
 {
   "name": "line-bot-sdk-rs",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "High-performance LINE Messaging API SDK built with Rust and NAPI-RS",
   "main": "dist/client.js",
   "types": "dist/client.d.ts",
@@ -117,5 +117,11 @@
   "workspaces": [
     "app"
   ],
-  "author": "Panudet Ingai"
+  "author": "Panudet Ingai",
+  "optionalDependencies": {
+    "line-bot-sdk-rs-darwin-arm64": "1.1.0",
+    "line-bot-sdk-rs-darwin-x64": "1.1.0",
+    "line-bot-sdk-rs-linux-x64-gnu": "1.1.0",
+    "line-bot-sdk-rs-win32-x64-msvc": "1.1.0"
+  }
 }
