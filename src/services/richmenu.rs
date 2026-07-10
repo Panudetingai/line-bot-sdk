@@ -23,7 +23,7 @@ impl LineClient {
       Ok(body) => serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string())),
       Err(e) => Err(Error::from_reason(e.to_string())),
     }
-  } 
+  }
 
   #[napi]
   pub async fn get_rich_menu(&self, rich_menu_id: String) -> Result<RichMenuResponse> {

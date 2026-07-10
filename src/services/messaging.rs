@@ -34,10 +34,12 @@ impl LineClient {
 
   #[napi]
   pub async fn message_content_preview(&self, message_id: String) -> Result<Buffer> {
-    let result = self.request_get_binary(&endpoints::message_content_preview(&message_id)).await;
+    let result = self
+      .request_get_binary(&endpoints::message_content_preview(&message_id))
+      .await;
     match result {
-        Ok(buffer) => Ok(buffer),
-        Err(e) => Err(Error::from_reason(e.to_string())),
+      Ok(buffer) => Ok(buffer),
+      Err(e) => Err(Error::from_reason(e.to_string())),
     }
   }
 

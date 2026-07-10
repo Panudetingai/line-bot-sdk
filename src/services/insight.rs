@@ -29,17 +29,13 @@ impl LineClient {
 
   #[napi]
   pub async fn get_demographic(&self) -> Result<String> {
-    let body = self
-      .request_get(&endpoints::insight_demographic())
-      .await?;
+    let body = self.request_get(&endpoints::insight_demographic()).await?;
     serde_json::from_str(&body).map_err(|e| Error::from_reason(e.to_string()))
   }
 
   #[napi]
   pub async fn get_webhook_endpoint(&self) -> Result<String> {
-    let body = self
-      .request_get(&endpoints::webhook_endpoint())
-      .await?;
+    let body = self.request_get(&endpoints::webhook_endpoint()).await?;
     Ok(body)
   }
 }
